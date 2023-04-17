@@ -7,16 +7,27 @@ import { nanoid } from 'nanoid';
 
 export class App extends Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermine Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
+    contacts:
+      JSON.parse(localStorage.getItem('contacts')) ??
+      [
+        // { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+        // { id: 'id-2', name: 'Hermine Kline', number: '443-89-12' },
+        // { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+        // { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+      ],
     filter: '',
   };
 
+  componentDidUpdate(prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      const stringifiedContacts = JSON.stringify(this.state.contacts);
+
+      localStorage.setItem('contacts', stringifiedContacts);
+    }
+  }
+
   addNewContact = data => {
+    const {contacts} = this.state;
     const newContact = {
       id: nanoid(),
       name: data.name,
@@ -24,7 +35,7 @@ export class App extends Component {
     };
 
     if (
-      this.state.contacts.some(
+      contacts.some(
         contact =>
           contact.name.toLowerCase().trim() ===
           newContact.name.toLowerCase().trim()
@@ -58,7 +69,7 @@ export class App extends Component {
   };
 
   render() {
-    const { filter } = this.state;
+    const { contacts, filter } = this.state;
     const filteredContacts = this.getFilteredContacts();
     return (
       <>
@@ -72,11 +83,20 @@ export class App extends Component {
         <section className="section">
           <div className="container">
             <h2 className="title">Contacts</h2>
-            <Filter filter={filter} onChangeFilter={this.onChangeFilter} />
-            <ContactList
-              contacts={filteredContacts}
-              deleteContact={this.deleteContact}
-            />
+
+            {contacts.length !== 0 ? (
+              <>
+                <Filter filter={filter} onChangeFilter={this.onChangeFilter} />
+                <ContactList
+                  contacts={filteredContacts}
+                  deleteContact={this.deleteContact}
+                />
+              </>
+            ) : (
+              <>
+                <h5>You still haven't any contacts</h5>
+              </>
+            )}
           </div>
         </section>
       </>
